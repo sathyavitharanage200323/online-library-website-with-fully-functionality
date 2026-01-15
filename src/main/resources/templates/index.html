@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LibrarySE - Your Digital Library</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">LibrarySE</div>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/books}">Books</a></li>
+                <li><a th:href="@{/staff}">Staff</a></li>
+                <li><a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Admin</a></li>
+                <li><a th:href="@{/login}" sec:authorize="!isAuthenticated()">Login</a></li>
+                <li>
+                    <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-outline">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Welcome to <span class="accent">LibrarySE</span></h1>
+                <p>Discover, explore, and manage your digital library collection with ease</p>
+                <div>
+                    <a th:href="@{/books}" class="btn">Browse Books</a>
+                    <a th:href="@{/staff}" class="btn btn-secondary">Meet Our Staff</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <h2>Why Choose <span class="highlight">LibrarySE</span>?</h2>
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>📚 Extensive Collection</h3>
+                        <p>Access thousands of books across various genres and subjects. From classic literature to modern bestsellers.</p>
+                    </div>
+                    <div class="card">
+                        <h3>🔍 Advanced Search</h3>
+                        <p>Find exactly what you're looking for with our powerful search and filtering capabilities.</p>
+                    </div>
+                    <div class="card">
+                        <h3>👥 Expert Staff</h3>
+                        <p>Our knowledgeable librarians are here to help you discover new books and answer your questions.</p>
+                    </div>
+                    <div class="card">
+                        <h3>⚡ Easy Management</h3>
+                        <p>Streamlined interface for both users and administrators to manage the library efficiently.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section" style="background-color: #f8f9fa;">
+            <div class="container">
+                <h2>Library <span class="highlight">Hours</span></h2>
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>Monday - Friday</h3>
+                        <p><strong>9:00 AM - 8:00 PM</strong></p>
+                    </div>
+                    <div class="card">
+                        <h3>Saturday</h3>
+                        <p><strong>10:00 AM - 6:00 PM</strong></p>
+                    </div>
+                    <div class="card">
+                        <h3>Sunday</h3>
+                        <p><strong>12:00 PM - 5:00 PM</strong></p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 LibrarySE. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Staff - LibrarySE</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">LibrarySE</div>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/books}">Books</a></li>
+                <li><a th:href="@{/staff}">Staff</a></li>
+                <li><a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Admin</a></li>
+                <li>
+                    <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-outline">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h1>Staff <span class="highlight">Management</span></h1>
+                    <button class="btn" onclick="openStaffModal()">Add New Staff</button>
+                </div>
+
+                <form th:action="@{/admin/staff}" method="get" class="search-bar">
+                    <input type="text" name="search" th:value="${search}" placeholder="Search staff..." class="search-input">
+                    <button type="submit" class="btn">Search</button>
+                </form>
+
+                <div class="card" style="overflow-x: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Position</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="member : ${staff.content}">
+                                <td th:text="${member.id}">1</td>
+                                <td th:text="${member.fullName}">Staff Name</td>
+                                <td th:text="${member.position}">Position</td>
+                                <td th:text="${member.email}">email@example.com</td>
+                                <td th:text="${member.phoneNumber ?: 'N/A'}">Phone</td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-warning" th:onclick="'editStaff(' + ${member.id} + ')'">Edit</button>
+                                        <button class="btn btn-sm btn-danger" th:onclick="'deleteStaff(' + ${member.id} + ')'">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${staff.content.size() == 0}" class="card">
+                    <h3>No staff members found</h3>
+                    <p>Try adjusting your search criteria or add a new staff member.</p>
+                </div>
+
+                <div th:if="${staff.totalPages > 1}" class="pagination">
+                    <a th:if="${staff.hasPrevious()}" 
+                       th:href="@{/admin/staff(search=${search}, page=${staff.number - 1})}">Previous</a>
+                    
+                    <span th:each="pageNum : ${#numbers.sequence(0, staff.totalPages - 1)}"
+                          th:if="${pageNum >= staff.number - 2 and pageNum <= staff.number + 2}">
+                        <a th:if="${pageNum != staff.number}"
+                           th:href="@{/admin/staff(search=${search}, page=${pageNum})}"
+                           th:text="${pageNum + 1}">1</a>
+                        <span th:if="${pageNum == staff.number}" class="current" th:text="${pageNum + 1}">1</span>
+                    </span>
+                    
+                    <a th:if="${staff.hasNext()}" 
+                       th:href="@{/admin/staff(search=${search}, page=${staff.number + 1})}">Next</a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="staffModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeStaffModal()">&times;</span>
+            <h2 id="modalTitle">Add New Staff</h2>
+            <form id="staffForm">
+                <div class="form-group">
+                    <label for="firstName">First Name *</label>
+                    <input type="text" id="firstName" name="firstName" required>
+                </div>
+                <div class="form-group">
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" name="lastName" required>
+                </div>
+                <div class="form-group">
+                    <label for="position">Position *</label>
+                    <select id="position" name="position" required>
+                        <option value="">Select Position</option>
+                        <option value="Library Director">Library Director</option>
+                        <option value="Librarian">Librarian</option>
+                        <option value="Assistant Librarian">Assistant Librarian</option>
+                        <option value="Reference Librarian">Reference Librarian</option>
+                        <option value="Technical Services">Technical Services</option>
+                        <option value="Cataloging Specialist">Cataloging Specialist</option>
+                        <option value="Circulation Manager">Circulation Manager</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="phoneNumber">Phone Number</label>
+                    <input type="tel" id="phoneNumber" name="phoneNumber">
+                </div>
+                <div class="form-group">
+                    <label for="profileImageUrl">Profile Image URL</label>
+                    <input type="url" id="profileImageUrl" name="profileImageUrl">
+                </div>
+                <div class="form-group">
+                    <label for="bio">Bio</label>
+                    <textarea id="bio" name="bio" rows="4" placeholder="Brief description of the staff member..."></textarea>
+                </div>
+                <div style="text-align: right; margin-top: 2rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeStaffModal()">Cancel</button>
+                    <button type="submit" class="btn">Save Staff</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 LibrarySE. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentStaffId = null;
+
+        function openStaffModal(staffId = null) {
+            currentStaffId = staffId;
+            const modal = document.getElementById('staffModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const form = document.getElementById('staffForm');
+            
+            if (staffId) {
+                modalTitle.textContent = 'Edit Staff Member';
+                loadStaffData(staffId);
+            } else {
+                modalTitle.textContent = 'Add New Staff';
+                form.reset();
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeStaffModal() {
+            document.getElementById('staffModal').style.display = 'none';
+            currentStaffId = null;
+        }
+
+        function loadStaffData(staffId) {
+            console.log('Loading staff data for ID:', staffId);
+            fetch(`/admin/staff/${staffId}`)
+                .then(response => {
+                    console.log('Load staff response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error('Failed to load staff data. Status: ' + response.status);
+                    }
+                    return response.json();
+                })
+                .then(staff => {
+                    console.log('Loaded staff data:', staff);
+                    document.getElementById('firstName').value = staff.firstName || '';
+                    document.getElementById('lastName').value = staff.lastName || '';
+                    document.getElementById('position').value = staff.position || '';
+                    document.getElementById('email').value = staff.email || '';
+                    document.getElementById('phoneNumber').value = staff.phoneNumber || '';
+                    document.getElementById('profileImageUrl').value = staff.profileImageUrl || '';
+                    document.getElementById('bio').value = staff.bio || '';
+                })
+                .catch(error => {
+                    console.error('Error loading staff:', error);
+                    alert('Error loading staff data: ' + error.message);
+                });
+        }
+
+        function editStaff(staffId) {
+            openStaffModal(staffId);
+        }
+
+        function deleteStaff(staffId) {
+            console.log('Attempting to delete staff with ID:', staffId);
+            if (confirm('Are you sure you want to delete this staff member?')) {
+                console.log('User confirmed deletion');
+                fetch(`/admin/staff/${staffId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    console.log('Delete response status:', response.status);
+                    if (response.ok) {
+                        console.log('Delete successful, reloading page');
+                        location.reload();
+                    } else {
+                        console.error('Delete failed with status:', response.status);
+                        alert('Error deleting staff member. Status: ' + response.status);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting staff:', error);
+                    alert('Error deleting staff member: ' + error.message);
+                });
+            }
+        }
+
+        document.getElementById('staffForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            console.log('Form submitted, currentStaffId:', currentStaffId);
+            
+            const formData = new FormData(this);
+            const staffData = {
+                firstName: formData.get('firstName'),
+                lastName: formData.get('lastName'),
+                position: formData.get('position'),
+                email: formData.get('email'),
+                phoneNumber: formData.get('phoneNumber') && formData.get('phoneNumber').trim() !== '' ? formData.get('phoneNumber') : null,
+                profileImageUrl: formData.get('profileImageUrl') && formData.get('profileImageUrl').trim() !== '' ? formData.get('profileImageUrl') : null,
+                bio: formData.get('bio') && formData.get('bio').trim() !== '' ? formData.get('bio') : null
+            };
+
+            const url = currentStaffId ? `/admin/staff/${currentStaffId}` : '/admin/staff';
+            const method = currentStaffId ? 'PUT' : 'POST';
+
+            console.log('Sending request to:', url, 'Method:', method);
+            console.log('Staff data:', staffData);
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(staffData)
+            })
+            .then(response => {
+                console.log('Form submission response status:', response.status);
+                if (response.ok) {
+                    console.log('Form submission successful');
+                    closeStaffModal();
+                    location.reload();
+                } else {
+                    console.error('Form submission failed with status:', response.status);
+                    response.text().then(errorMessage => {
+                        alert('Error saving staff member: ' + errorMessage);
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error saving staff:', error);
+                alert('Error saving staff member: ' + error.message);
+            });
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('staffModal');
+            if (event.target === modal) {
+                closeStaffModal();
+            }
+        };
+    </script>
+</body>
+</html>

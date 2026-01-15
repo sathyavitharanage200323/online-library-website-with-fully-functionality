@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - LibrarySE</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">LibrarySE</div>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/books}">Books</a></li>
+                <li><a th:href="@{/staff}">Staff</a></li>
+                <li><a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Admin</a></li>
+                <li>
+                    <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-outline">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="section">
+                <h1>Admin <span class="highlight">Dashboard</span></h1>
+                
+                <div class="card-grid">
+                    <div class="card">
+                        <h3>📚 Book Management</h3>
+                        <p>Add, edit, delete, and manage all books in the library collection.</p>
+                        <a th:href="@{/admin/books}" class="btn">Manage Books</a>
+                    </div>
+                    <div class="card">
+                        <h3>👥 Staff Management</h3>
+                        <p>Manage staff members, their profiles, and contact information.</p>
+                        <a th:href="@{/admin/staff}" class="btn">Manage Staff</a>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top: 2rem;">
+                    <h3>Quick Stats</h3>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                        <div style="text-align: center; padding: 1rem; background-color: #f8f9fa; border-radius: 8px;">
+                            <h4 style="color: #A04747; margin-bottom: 0.5rem;">Total Books</h4>
+                            <p style="font-size: 2rem; font-weight: bold; color: #343131;" id="totalBooks">-</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background-color: #f8f9fa; border-radius: 8px;">
+                            <h4 style="color: #A04747; margin-bottom: 0.5rem;">Available Books</h4>
+                            <p style="font-size: 2rem; font-weight: bold; color: #343131;" id="availableBooks">-</p>
+                        </div>
+                        <div style="text-align: center; padding: 1rem; background-color: #f8f9fa; border-radius: 8px;">
+                            <h4 style="color: #A04747; margin-bottom: 0.5rem;">Total Staff</h4>
+                            <p style="font-size: 2rem; font-weight: bold; color: #343131;" id="totalStaff">-</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 LibrarySE. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStats();
+        });
+
+        function loadStats() {
+            fetch('/books/api')
+                .then(response => response.json())
+                .then(books => {
+                    document.getElementById('totalBooks').textContent = books.length;
+                    const availableBooks = books.filter(book => book.isAvailable).length;
+                    document.getElementById('availableBooks').textContent = availableBooks;
+                })
+                .catch(error => console.error('Error loading book stats:', error));
+
+            fetch('/staff/api')
+                .then(response => response.json())
+                .then(staff => {
+                    document.getElementById('totalStaff').textContent = staff.length;
+                })
+                .catch(error => console.error('Error loading staff stats:', error));
+        }
+    </script>
+</body>
+</html>

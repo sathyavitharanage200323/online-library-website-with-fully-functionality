@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${staff.fullName} + ' - LibrarySE'">Staff Details - LibrarySE</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">LibrarySE</div>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/books}">Books</a></li>
+                <li><a th:href="@{/staff}">Staff</a></li>
+                <li><a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Admin</a></li>
+                <li><a th:href="@{/login}" sec:authorize="!isAuthenticated()">Login</a></li>
+                <li>
+                    <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-outline">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="section">
+                <div style="margin-bottom: 2rem;">
+                    <a th:href="@{/staff}" class="btn btn-outline" style="margin-bottom: 1rem; display: inline-block;">
+                        ← Back to Staff
+                    </a>
+                </div>
+
+                <div class="card" style="max-width: 800px; margin: 0 auto;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 2rem; align-items: flex-start;">
+                        <!-- Profile Image -->
+                        <div style="flex: 0 0 200px;">
+                            <div class="profile-image-container">
+                                <img th:if="${staff.profileImageUrl != null and !staff.profileImageUrl.isEmpty()}" 
+                                     th:src="${staff.profileImageUrl}" 
+                                     th:alt="${staff.fullName}"
+                                     class="profile-image">
+                                <div th:unless="${staff.profileImageUrl != null and !staff.profileImageUrl.isEmpty()}" 
+                                     class="profile-image-placeholder">
+                                    <span th:text="${#strings.substring(staff.firstName, 0, 1) + #strings.substring(staff.lastName, 0, 1)}">AB</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Staff Information -->
+                        <div style="flex: 1; min-width: 300px;">
+                            <h1 th:text="${staff.fullName}" class="highlight">Staff Name</h1>
+                            <h2 th:text="${staff.position}" style="color: #A04747; margin-bottom: 1.5rem;">Position</h2>
+
+                            <div class="info-grid">
+                                <div class="info-item">
+                                    <strong>Email:</strong>
+                                    <a th:href="'mailto:' + ${staff.email}" th:text="${staff.email}">email@example.com</a>
+                                </div>
+                                
+                                <div class="info-item" th:if="${staff.phoneNumber != null and !staff.phoneNumber.isEmpty()}">
+                                    <strong>Phone:</strong>
+                                    <a th:href="'tel:' + ${staff.phoneNumber}" th:text="${staff.phoneNumber}">Phone Number</a>
+                                </div>
+                                
+                                <div class="info-item" th:unless="${staff.phoneNumber != null and !staff.phoneNumber.isEmpty()}">
+                                    <strong>Phone:</strong>
+                                    <span style="color: #666;">Not provided</span>
+                                </div>
+                            </div>
+
+                            <!-- Bio Section -->
+                            <div th:if="${staff.bio != null and !staff.bio.isEmpty()}" style="margin-top: 2rem;">
+                                <h3 style="color: #343131; margin-bottom: 1rem;">About</h3>
+                                <p th:text="${staff.bio}" style="line-height: 1.6; color: #555;">Bio content</p>
+                            </div>
+
+                            <!-- Contact Actions -->
+                            <div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+                                <a th:href="'mailto:' + ${staff.email}" class="btn">
+                                    📧 Send Email
+                                </a>
+                                <a th:if="${staff.phoneNumber != null and !staff.phoneNumber.isEmpty()}" 
+                                   th:href="'tel:' + ${staff.phoneNumber}" 
+                                   class="btn btn-outline">
+                                    📞 Call
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="card" style="max-width: 800px; margin: 2rem auto 0;">
+                    <h3 style="color: #343131; margin-bottom: 1rem;">Library Information</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Staff ID:</strong>
+                            <span th:text="${staff.id}">ID</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Department:</strong>
+                            <span th:text="${staff.position}">Position</span>
+                        </div>
+                        <div class="info-item">
+                            <strong>Contact:</strong>
+                            <span>Available via email and phone</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 LibrarySE. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <style>
+        .profile-image-container {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-image-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #A04747, #D8A25E);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+            font-weight: bold;
+        }
+
+        .info-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .info-item strong {
+            color: #343131;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item a {
+            color: #A04747;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .info-item a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .profile-image-container {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .profile-image-placeholder {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books - LibrarySE</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">LibrarySE</div>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/books}">Books</a></li>
+                <li><a th:href="@{/staff}">Staff</a></li>
+                <li><a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Admin</a></li>
+                <li><a th:href="@{/login}" sec:authorize="!isAuthenticated()">Login</a></li>
+                <li>
+                    <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-outline">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="section">
+                <h1>Our <span class="highlight">Book Collection</span></h1>
+                
+                <form th:action="@{/books}" method="get" class="search-bar">
+                    <input type="text" name="search" th:value="${search}" placeholder="Search by title, author, or ISBN..." class="search-input">
+                    <select name="available" class="filter-select">
+                        <option value="">All Books</option>
+                        <option value="true" th:selected="${available == true}">Available Only</option>
+                        <option value="false" th:selected="${available == false}">Unavailable</option>
+                    </select>
+                    <button type="submit" class="btn">Search</button>
+                </form>
+
+                <div class="sort-controls">
+                    <label for="sort">Sort by:</label>
+                    <select name="sort" id="sort" onchange="updateSort()">
+                        <option value="title" th:selected="${sort == 'title'}">Title</option>
+                        <option value="author" th:selected="${sort == 'author'}">Author</option>
+                        <option value="publicationDate" th:selected="${sort == 'publicationDate'}">Publication Date</option>
+                    </select>
+                    <select name="direction" id="direction" onchange="updateSort()">
+                        <option value="asc" th:selected="${direction == 'asc'}">Ascending</option>
+                        <option value="desc" th:selected="${direction == 'desc'}">Descending</option>
+                    </select>
+                </div>
+
+                <div class="card-grid" th:if="${books.content.size() > 0}">
+                    <div class="card" th:each="book : ${books.content}">
+                        <h3 th:text="${book.title}">Book Title</h3>
+                        <p><strong>Author:</strong> <span th:text="${book.author}">Author Name</span></p>
+                        <p><strong>ISBN:</strong> <span th:text="${book.isbn}">ISBN</span></p>
+                        <p th:if="${book.description}" th:text="${#strings.abbreviate(book.description, 100)}">Book description...</p>
+                        <p>
+                            <span th:class="${book.isAvailable} ? 'badge badge-success' : 'badge badge-danger'"
+                                  th:text="${book.isAvailable} ? 'Available' : 'Unavailable'">Available</span>
+                        </p>
+                        <div style="margin-top: 1rem;">
+                            <a th:href="@{'/books/' + ${book.id}}" class="btn btn-sm">View Details</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${books.content.size() == 0}" class="card">
+                    <h3>No books found</h3>
+                    <p>Try adjusting your search criteria or browse all books.</p>
+                    <a th:href="@{/books}" class="btn">View All Books</a>
+                </div>
+
+                <div th:if="${books.totalPages > 1}" class="pagination">
+                    <a th:if="${books.hasPrevious()}" 
+                       th:href="@{/books(search=${search}, available=${available}, sort=${sort}, direction=${direction}, page=${books.number - 1})}">Previous</a>
+                    
+                    <span th:each="pageNum : ${#numbers.sequence(0, books.totalPages - 1)}"
+                          th:if="${pageNum >= books.number - 2 and pageNum <= books.number + 2}">
+                        <a th:if="${pageNum != books.number}"
+                           th:href="@{/books(search=${search}, available=${available}, sort=${sort}, direction=${direction}, page=${pageNum})}"
+                           th:text="${pageNum + 1}">1</a>
+                        <span th:if="${pageNum == books.number}" class="current" th:text="${pageNum + 1}">1</span>
+                    </span>
+                    
+                    <a th:if="${books.hasNext()}" 
+                       th:href="@{/books(search=${search}, available=${available}, sort=${sort}, direction=${direction}, page=${books.number + 1})}">Next</a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 LibrarySE. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function updateSort() {
+            const sort = document.getElementById('sort').value;
+            const direction = document.getElementById('direction').value;
+            const search = new URLSearchParams(window.location.search).get('search') || '';
+            const available = new URLSearchParams(window.location.search).get('available') || '';
+            
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', sort);
+            url.searchParams.set('direction', direction);
+            url.searchParams.set('page', '0');
+            
+            window.location.href = url.toString();
+        }
+    </script>
+</body>
+</html>

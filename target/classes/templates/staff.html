@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff - LibrarySE</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">LibrarySE</div>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/books}">Books</a></li>
+                <li><a th:href="@{/staff}">Staff</a></li>
+                <li><a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Admin</a></li>
+                <li><a th:href="@{/login}" sec:authorize="!isAuthenticated()">Login</a></li>
+                <li>
+                    <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-outline">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="section">
+                <h1>Meet Our <span class="highlight">Staff</span></h1>
+                
+                <form th:action="@{/staff}" method="get" class="search-bar">
+                    <input type="text" name="search" th:value="${search}" placeholder="Search by name or position..." class="search-input">
+                    <select name="position" class="filter-select">
+                        <option value="">All Positions</option>
+                        <option value="Librarian" th:selected="${position == 'Librarian'}">Librarian</option>
+                        <option value="Assistant Librarian" th:selected="${position == 'Assistant Librarian'}">Assistant Librarian</option>
+                        <option value="Library Director" th:selected="${position == 'Library Director'}">Library Director</option>
+                        <option value="Technical Services" th:selected="${position == 'Technical Services'}">Technical Services</option>
+                        <option value="Reference Librarian" th:selected="${position == 'Reference Librarian'}">Reference Librarian</option>
+                    </select>
+                    <button type="submit" class="btn">Search</button>
+                </form>
+
+                <div class="sort-controls">
+                    <label for="sort">Sort by:</label>
+                    <select name="sort" id="sort" onchange="updateSort()">
+                        <option value="firstName" th:selected="${sort == 'firstName'}">First Name</option>
+                        <option value="lastName" th:selected="${sort == 'lastName'}">Last Name</option>
+                        <option value="position" th:selected="${sort == 'position'}">Position</option>
+                    </select>
+                    <select name="direction" id="direction" onchange="updateSort()">
+                        <option value="asc" th:selected="${direction == 'asc'}">Ascending</option>
+                        <option value="desc" th:selected="${direction == 'desc'}">Descending</option>
+                    </select>
+                </div>
+
+                <div class="card-grid" th:if="${staff.content.size() > 0}">
+                    <div class="card" th:each="member : ${staff.content}">
+                        <div style="text-align: center; margin-bottom: 1rem;">
+                            <div style="width: 80px; height: 80px; background-color: #D8A25E; border-radius: 50%; margin: 0 auto; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem; font-weight: bold;"
+                                 th:text="${#strings.substring(member.firstName, 0, 1) + #strings.substring(member.lastName, 0, 1)}">JD</div>
+                        </div>
+                        <h3 th:text="${member.fullName}">Staff Member Name</h3>
+                        <p><strong>Position:</strong> <span th:text="${member.position}">Position</span></p>
+                        <p><strong>Email:</strong> <span th:text="${member.email}">email@example.com</span></p>
+                        <p th:if="${member.phoneNumber}"><strong>Phone:</strong> <span th:text="${member.phoneNumber}">Phone Number</span></p>
+                        <p th:if="${member.bio}" th:text="${#strings.abbreviate(member.bio, 150)}">Staff member bio...</p>
+                        <div style="margin-top: 1rem;">
+                            <a th:href="@{'/staff/' + ${member.id}}" class="btn btn-sm">View Profile</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div th:if="${staff.content.size() == 0}" class="card">
+                    <h3>No staff members found</h3>
+                    <p>Try adjusting your search criteria or browse all staff members.</p>
+                    <a th:href="@{/staff}" class="btn">View All Staff</a>
+                </div>
+
+                <div th:if="${staff.totalPages > 1}" class="pagination">
+                    <a th:if="${staff.hasPrevious()}" 
+                       th:href="@{/staff(search=${search}, position=${position}, sort=${sort}, direction=${direction}, page=${staff.number - 1})}">Previous</a>
+                    
+                    <span th:each="pageNum : ${#numbers.sequence(0, staff.totalPages - 1)}"
+                          th:if="${pageNum >= staff.number - 2 and pageNum <= staff.number + 2}">
+                        <a th:if="${pageNum != staff.number}"
+                           th:href="@{/staff(search=${search}, position=${position}, sort=${sort}, direction=${direction}, page=${pageNum})}"
+                           th:text="${pageNum + 1}">1</a>
+                        <span th:if="${pageNum == staff.number}" class="current" th:text="${pageNum + 1}">1</span>
+                    </span>
+                    
+                    <a th:if="${staff.hasNext()}" 
+                       th:href="@{/staff(search=${search}, position=${position}, sort=${sort}, direction=${direction}, page=${staff.number + 1})}">Next</a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 LibrarySE. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        function updateSort() {
+            const sort = document.getElementById('sort').value;
+            const direction = document.getElementById('direction').value;
+            
+            const url = new URL(window.location.href);
+            url.searchParams.set('sort', sort);
+            url.searchParams.set('direction', direction);
+            url.searchParams.set('page', '0');
+            
+            window.location.href = url.toString();
+        }
+    </script>
+</body>
+</html>

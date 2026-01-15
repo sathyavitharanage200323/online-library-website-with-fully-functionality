@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - LibrarySE</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">LibrarySE</div>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/books}">Books</a></li>
+                <li><a th:href="@{/staff}">Staff</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="login-form">
+                <h2>Admin Login</h2>
+                <div th:if="${param.error}" class="alert alert-error">
+                    Invalid username or password.
+                </div>
+                <div th:if="${param.logout}" class="alert alert-success">
+                    You have been logged out successfully.
+                </div>
+                
+                <form th:action="@{/login}" method="post">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" name="password" required>
+                    </div>
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button type="submit" class="btn">Login</button>
+                    </div>
+                </form>
+                
+                <div style="text-align: center; margin-top: 2rem; padding: 1rem; background-color: #f8f9fa; border-radius: 8px;">
+                    <h4>Demo Credentials</h4>
+                    <p><strong>Username:</strong> admin</p>
+                    <p><strong>Password:</strong> admin123</p>
+                </div>
+                
+                <div style="text-align: center; margin-top: 1rem;">
+                    <p>Don't have an account? <a th:href="@{/auth/signup}" style="color: #A04747;">Sign Up</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 LibrarySE. All rights reserved.</p>
+        </div>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Books - LibrarySE</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="logo">LibrarySE</div>
+            <ul class="nav-links">
+                <li><a th:href="@{/}">Home</a></li>
+                <li><a th:href="@{/books}">Books</a></li>
+                <li><a th:href="@{/staff}">Staff</a></li>
+                <li><a th:href="@{/admin}" sec:authorize="hasRole('ADMIN')">Admin</a></li>
+                <li>
+                    <form th:action="@{/logout}" method="post" sec:authorize="isAuthenticated()">
+                        <button type="submit" class="btn btn-outline">Logout</button>
+                    </form>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <section class="section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h1>Book <span class="highlight">Management</span></h1>
+                    <button class="btn" onclick="openBookModal()">Add New Book</button>
+                </div>
+
+                <form th:action="@{/admin/books}" method="get" class="search-bar">
+                    <input type="text" name="search" th:value="${search}" placeholder="Search books..." class="search-input">
+                    <button type="submit" class="btn">Search</button>
+                </form>
+
+                <div class="card" style="overflow-x: auto;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>ISBN</th>
+                                <th>Available</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="book : ${books.content}">
+                                <td th:text="${book.id}">1</td>
+                                <td th:text="${book.title}">Book Title</td>
+                                <td th:text="${book.author}">Author</td>
+                                <td th:text="${book.isbn}">ISBN</td>
+                                <td>
+                                    <span th:class="${book.isAvailable} ? 'badge badge-success' : 'badge badge-danger'"
+                                          th:text="${book.isAvailable} ? 'Yes' : 'No'">Yes</span>
+                                </td>
+                                <td>
+                                    <div class="table-actions">
+                                        <button class="btn btn-sm btn-warning" th:onclick="'editBook(' + ${book.id} + ')'">Edit</button>
+                                        <button class="btn btn-sm btn-danger" th:onclick="'deleteBook(' + ${book.id} + ')'">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div th:if="${books.content.size() == 0}" class="card">
+                    <h3>No books found</h3>
+                    <p>Try adjusting your search criteria or add a new book.</p>
+                </div>
+
+                <div th:if="${books.totalPages > 1}" class="pagination">
+                    <a th:if="${books.hasPrevious()}" 
+                       th:href="@{/admin/books(search=${search}, page=${books.number - 1})}">Previous</a>
+                    
+                    <span th:each="pageNum : ${#numbers.sequence(0, books.totalPages - 1)}"
+                          th:if="${pageNum >= books.number - 2 and pageNum <= books.number + 2}">
+                        <a th:if="${pageNum != books.number}"
+                           th:href="@{/admin/books(search=${search}, page=${pageNum})}"
+                           th:text="${pageNum + 1}">1</a>
+                        <span th:if="${pageNum == books.number}" class="current" th:text="${pageNum + 1}">1</span>
+                    </span>
+                    
+                    <a th:if="${books.hasNext()}" 
+                       th:href="@{/admin/books(search=${search}, page=${books.number + 1})}">Next</a>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="bookModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeBookModal()">&times;</span>
+            <h2 id="modalTitle">Add New Book</h2>
+            <form id="bookForm">
+                <div class="form-group">
+                    <label for="title">Title *</label>
+                    <input type="text" id="title" name="title" required>
+                </div>
+                <div class="form-group">
+                    <label for="author">Author *</label>
+                    <input type="text" id="author" name="author" required>
+                </div>
+                <div class="form-group">
+                    <label for="isbn">ISBN *</label>
+                    <input type="text" id="isbn" name="isbn" required>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" name="description" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="publicationDate">Publication Date</label>
+                    <input type="date" id="publicationDate" name="publicationDate">
+                </div>
+                <div class="form-group">
+                    <label for="coverImageUrl">Cover Image URL</label>
+                    <input type="url" id="coverImageUrl" name="coverImageUrl">
+                </div>
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="isAvailable" name="isAvailable" checked>
+                        Available
+                    </label>
+                </div>
+                <div style="text-align: right; margin-top: 2rem;">
+                    <button type="button" class="btn btn-outline" onclick="closeBookModal()">Cancel</button>
+                    <button type="submit" class="btn">Save Book</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2024 LibrarySE. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        let currentBookId = null;
+
+        function openBookModal(bookId = null) {
+            currentBookId = bookId;
+            const modal = document.getElementById('bookModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const form = document.getElementById('bookForm');
+            
+            if (bookId) {
+                modalTitle.textContent = 'Edit Book';
+                loadBookData(bookId);
+            } else {
+                modalTitle.textContent = 'Add New Book';
+                form.reset();
+                document.getElementById('isAvailable').checked = true;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function closeBookModal() {
+            document.getElementById('bookModal').style.display = 'none';
+            currentBookId = null;
+        }
+
+        function loadBookData(bookId) {
+            fetch(`/admin/books/${bookId}`)
+                .then(response => response.json())
+                .then(book => {
+                    document.getElementById('title').value = book.title || '';
+                    document.getElementById('author').value = book.author || '';
+                    document.getElementById('isbn').value = book.isbn || '';
+                    document.getElementById('description').value = book.description || '';
+                    document.getElementById('publicationDate').value = book.publicationDate || '';
+                    document.getElementById('coverImageUrl').value = book.coverImageUrl || '';
+                    document.getElementById('isAvailable').checked = book.isAvailable || false;
+                })
+                .catch(error => {
+                    console.error('Error loading book:', error);
+                    alert('Error loading book data');
+                });
+        }
+
+        function editBook(bookId) {
+            openBookModal(bookId);
+        }
+
+        function deleteBook(bookId) {
+            if (confirm('Are you sure you want to delete this book?')) {
+                fetch(`/admin/books/${bookId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => {
+                    if (response.ok) {
+                        location.reload();
+                    } else {
+                        alert('Error deleting book');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting book:', error);
+                    alert('Error deleting book');
+                });
+            }
+        }
+
+        document.getElementById('bookForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const bookData = {
+                title: formData.get('title'),
+                author: formData.get('author'),
+                isbn: formData.get('isbn'),
+                description: formData.get('description'),
+                publicationDate: formData.get('publicationDate') || null,
+                coverImageUrl: formData.get('coverImageUrl'),
+                isAvailable: formData.get('isAvailable') === 'on'
+            };
+
+            const url = currentBookId ? `/admin/books/${currentBookId}` : '/admin/books';
+            const method = currentBookId ? 'PUT' : 'POST';
+
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(bookData)
+            })
+            .then(response => {
+                if (response.ok) {
+                    closeBookModal();
+                    location.reload();
+                } else {
+                    alert('Error saving book');
+                }
+            })
+            .catch(error => {
+                console.error('Error saving book:', error);
+                alert('Error saving book');
+            });
+        });
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('bookModal');
+            if (event.target === modal) {
+                closeBookModal();
+            }
+        };
+    </script>
+</body>
+</html>
