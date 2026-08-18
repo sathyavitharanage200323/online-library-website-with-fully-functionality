@@ -1,0 +1,2 @@
+// Frontend module - holds Thymeleaf templates and static resources
+// No special configuration needed beyond what the root build provides
