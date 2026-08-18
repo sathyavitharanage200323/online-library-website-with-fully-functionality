@@ -1,17 +1,4 @@
 # Library Management System
-<img width="1899" height="969" alt="Screenshot 2026-01-16 021852" src="https://github.com/user-attachments/assets/5f006612-c905-49c2-907e-5b68f027bf1a" />
-
-<img width="1917" height="968" alt="Screenshot 2026-01-16 021909" src="https://github.com/user-attachments/assets/bea7552e-62f9-4073-bbc3-084c0097722d" />
-
-<img width="1918" height="966" alt="Screenshot 2026-01-16 021931" src="https://github.com/user-attachments/assets/f4abe38e-a62d-4847-910a-75fadd05ce3f" />
-
-<img width="1900" height="922" alt="Screenshot 2026-01-16 022012" src="https://github.com/user-attachments/assets/74235f85-d2b5-45dd-9a24-a4464f90a5d7" />
-
-<img width="1908" height="963" alt="Screenshot 2026-01-16 022028" src="https://github.com/user-attachments/assets/420ba1fb-7640-4f61-8526-c711a9ce0b09" />
-
-<img width="1895" height="901" alt="Screenshot 2026-01-16 022042" src="https://github.com/user-attachments/assets/c6ca4404-eb77-4a4f-93b1-c4a9c4dac246" />
-
-<img width="1900" height="888" alt="Screenshot 2026-01-16 022058" src="https://github.com/user-attachments/assets/60ac6af8-e7ea-4921-8d54-3eb9781330f1" />
 
 A comprehensive Spring Boot web application for managing library operations including book cataloging, staff management, and user interactions.
 
@@ -36,30 +23,15 @@ A comprehensive Spring Boot web application for managing library operations incl
 ## Technology Stack
 
 - **Backend**: Spring Boot 3.5.7, Spring Security, Spring Data JPA
-- **Database**: Microsoft SQL Server with Windows Authentication
+- **Database**: H2 (in-memory)
 - **Frontend**: Thymeleaf templates, CSS3, JavaScript
-- **Build Tool**: Maven
-- **Java Version**: 17
+- **Build Tool**: Gradle (multi-module)
+- **Java Version**: 25
 
 ## Prerequisites
 
-- Java 17 or higher
-- Maven 3.6+
-- Microsoft SQL Server (Express or higher)
-- IDE (IntelliJ IDEA, Eclipse, or VS Code)
-
-## Database Setup
-
-1. **SQL Server Configuration**:
-   - Ensure SQL Server is running
-   - Create database named `LibraryDB`
-   - Configure Windows Authentication
-   - Ensure `sqljdbc_auth.dll` is in system PATH
-
-2. **Database Tables**:
-   The application will automatically create the following tables:
-   - `libraryBook` - Stores book information
-   - `libraryStaff` - Stores staff member information
+- Java 25 or higher
+- Gradle 8.14+ (or use included wrapper)
 
 ## Installation & Setup
 
@@ -69,64 +41,76 @@ A comprehensive Spring Boot web application for managing library operations incl
    cd library-system
    ```
 
-2. **Configure Database**:
-   Update `src/main/resources/application.properties`:
-   ```properties
-   spring.datasource.url=jdbc:sqlserver://localhost\\IMA\\SQLEXPRESS;databaseName=LibraryDB;integratedSecurity=true
-   ```
-
-3. **Build the Application**:
+2. **Build the Application**:
    ```bash
-   mvn clean install
+   ./gradlew build
    ```
 
-4. **Run the Application**:
+3. **Run the Application**:
    ```bash
-   mvn spring-boot:run
+   ./gradlew :backend:bootRun
    ```
 
-5. **Access the Application**:
+4. **Access the Application**:
    - Open browser and navigate to `http://localhost:8080`
-   - Admin login: `admin` / `admin123`
+   - Admin login: `admin@libraryse.com` / `admin123`
+   - User login: `john.doe@example.com` / `password123`
 
 ## Project Structure
 
 ```
 library-system/
-├── src/
-│   ├── main/
-│   │   ├── java/com/librarysystem/
-│   │   │   ├── controller/
-│   │   │   │   ├── HomeController.java
-│   │   │   │   ├── BookController.java
-│   │   │   │   ├── StaffController.java
-│   │   │   │   └── AdminController.java
-│   │   │   ├── model/
-│   │   │   │   ├── Book.java
-│   │   │   │   └── Staff.java
-│   │   │   ├── repository/
-│   │   │   │   ├── BookRepository.java
-│   │   │   │   └── StaffRepository.java
-│   │   │   ├── service/
-│   │   │   │   ├── BookService.java
-│   │   │   │   └── StaffService.java
-│   │   │   ├── config/
-│   │   │   │   ├── SecurityConfig.java
-│   │   │   │   └── DataInitializer.java
-│   │   │   └── LibrarySystemApplication.java
-│   │   └── resources/
-│   │       ├── templates/
-│   │       │   ├── index.html
-│   │       │   ├── books.html
-│   │       │   ├── staff.html
-│   │       │   ├── admin-dashboard.html
-│   │       │   ├── admin-books.html
-│   │       │   ├── admin-staff.html
-│   │       │   └── login.html
-│   │       ├── static/css/style.css
-│   │       └── application.properties
-│   └── test/
-├── pom.xml
+├── backend/
+│   ├── build.gradle
+│   └── src/main/java/com/librarysystem/
+│       ├── LibrarySystemApplication.java
+│       ├── config/
+│       │   ├── SecurityConfig.java
+│       │   └── DataInitializer.java
+│       ├── controller/
+│       │   ├── HomeController.java
+│       │   ├── LoginController.java
+│       │   ├── AuthController.java
+│       │   ├── BookController.java
+│       │   ├── StaffController.java
+│       │   ├── AdminController.java
+│       │   └── AdminBookController.java
+│       ├── model/
+│       │   ├── Book.java
+│       │   ├── Staff.java
+│       │   ├── User.java
+│       │   └── UserRole.java
+│       ├── repository/
+│       │   ├── BookRepository.java
+│       │   ├── StaffRepository.java
+│       │   └── UserRepository.java
+│       └── service/
+│           ├── BookService.java
+│           ├── StaffService.java
+│           └── UserService.java
+├── frontend/
+│   ├── build.gradle
+│   └── src/main/resources/
+│       ├── templates/
+│       │   ├── index.html
+│       │   ├── login.html
+│       │   ├── books.html
+│       │   ├── book-detail.html
+│       │   ├── staff.html
+│       │   ├── staff-detail.html
+│       │   ├── auth/
+│       │   │   └── signup.html
+│       │   └── admin/
+│       │       ├── admin-dashboard.html
+│       │       ├── admin-books.html
+│       │       └── admin-staff.html
+│       └── static/
+│           └── css/style.css
+├── gradle/wrapper/
+├── gradlew
+├── gradlew.bat
+├── build.gradle
+├── settings.gradle
 └── README.md
 ```
 
@@ -159,21 +143,21 @@ library-system/
 
 ### Application Properties
 ```properties
-# Database Configuration
-spring.datasource.driver-class-name=com.microsoft.sqlserver.jdbc.SQLServerDriver
-spring.datasource.url=jdbc:sqlserver://localhost\\IMA\\SQLEXPRESS;databaseName=LibraryDB;integratedSecurity=true
+# Database Configuration (H2 in-memory)
+spring.datasource.driver-class-name=org.h2.Driver
+spring.datasource.url=jdbc:h2:mem:testdb
+spring.datasource.username=sa
+spring.datasource.password=password
 
 # JPA Configuration
-spring.jpa.hibernate.ddl-auto=validate
+spring.jpa.hibernate.ddl-auto=create-drop
 spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.SQLServerDialect
 
 # Server Configuration
 server.port=8080
 ```
 
 ### Color Theme
-The application uses a consistent color scheme:
 - **Header**: #343131 (Dark Gray)
 - **Primary Buttons**: #A04747 (Red)
 - **Highlights**: #D8A25E (Gold)
@@ -181,48 +165,17 @@ The application uses a consistent color scheme:
 
 ## Sample Data
 
-The application includes sample data initialization:
+The application includes sample data initialization on startup:
 - **5 Sample Books**: Classic literature with realistic metadata
 - **5 Sample Staff Members**: Various library positions
+- **2 Users**: Admin and regular user accounts
 
 ## Security
 
-- **Admin Authentication**: Spring Security with in-memory user
+- **Authentication**: Spring Security with database-backed users
 - **Password Encryption**: BCrypt password encoding
-- **CSRF Protection**: Enabled for form submissions
+- **Role-based Access**: USER and ADMIN roles
 - **Session Management**: Secure session handling
-
-## Development
-
-### Adding New Features
-1. Create model classes in `model` package
-2. Add repository interfaces in `repository` package
-3. Implement business logic in `service` package
-4. Create controllers in `controller` package
-5. Add Thymeleaf templates in `templates` directory
-
-### Database Changes
-- Update model classes with new fields
-- Modify repository interfaces for new queries
-- Update service layer for new business logic
-- Run application to apply schema changes
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Database Connection Error**:
-   - Verify SQL Server is running
-   - Check Windows Authentication settings
-   - Ensure `sqljdbc_auth.dll` is in PATH
-
-2. **Login Issues**:
-   - Use default credentials: `admin` / `admin123`
-   - Check Spring Security configuration
-
-3. **Port Already in Use**:
-   - Change port in `application.properties`
-   - Or stop other applications using port 8080
 
 ## Contributing
 
@@ -235,16 +188,3 @@ The application includes sample data initialization:
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support and questions:
-- Create an issue in the repository
-- Contact the development team
-- Check the documentation
-
-
------
-
-**Library Management System** - Built with Spring Boot and modern web technologies.
-"# online-library-website-with-fully-functionality" 
