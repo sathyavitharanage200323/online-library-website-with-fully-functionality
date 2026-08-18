@@ -1,1 +1,2 @@
-rootProject.name = 'librarySE'
+rootProject.name = 'library-system'
+include 'backend', 'frontend'
